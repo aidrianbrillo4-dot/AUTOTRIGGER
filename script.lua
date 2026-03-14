@@ -2,7 +2,7 @@
 local HoldClick = true
 local Hotkey = "t"
 local HotkeyToggle = true
-local TriggerDelay = 0.06 -- delay before shooting
+local TriggerDelay = 0.04 -- delay before shooting
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
