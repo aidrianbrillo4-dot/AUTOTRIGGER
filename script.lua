@@ -1,16 +1,10 @@
 -- Settings
 local Hotkey = "t"
 local HotkeyToggle = true
-local HoldClick = true
-
--- Webhook
-local WebhookURL = "https://discord.com/api/webhooks/1483425946961973308/fPVWe9pRrLskkkhnI-qF8RKHjCiSOCiKd__Kk6lwr5Vg4lvd8Fb0pQR9G26bttteIdBi"
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local HttpService = game:GetService("HttpService")
-local MarketplaceService = game:GetService("MarketplaceService")
 
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
@@ -18,63 +12,6 @@ local Mouse = LocalPlayer:GetMouse()
 local Enabled = false
 local RightClickHeld = false
 local CurrentlyPressed = false
-
--- 🔹 Webhook Embed Logger
-pcall(function()
-    if request or http_request or syn and syn.request then
-        local req = request or http_request or syn.request
-
-        local currentTime = os.date("%B %d, %Y | %I:%M %p")
-
-        local gameName = "Unknown"
-        pcall(function()
-            gameName = MarketplaceService:GetProductInfo(game.PlaceId).Name
-        end)
-
-        local data = {
-            ["embeds"] = {{
-                ["title"] = "🟢 Script Execution",
-                ["color"] = 3066993,
-
-                ["thumbnail"] = {
-                    ["url"] = "https://www.roblox.com/headshot-thumbnail/image?userId="
-                        .. LocalPlayer.UserId .. "&width=420&height=420&format=png"
-                },
-
-                ["fields"] = {
-                    {
-                        ["name"] = "👤 User",
-                        ["value"] = "```" .. LocalPlayer.Name .. "```",
-                        ["inline"] = true
-                    },
-                    {
-                        ["name"] = "🕒 Time",
-                        ["value"] = "```" .. currentTime .. "```",
-                        ["inline"] = true
-                    },
-                    {
-                        ["name"] = "🎮 Game",
-                        ["value"] = "```" .. gameName .. "```",
-                        ["inline"] = false
-                    }
-                },
-
-                ["footer"] = {
-                    ["text"] = "Execution Logger"
-                }
-            }}
-        }
-
-        req({
-            Url = WebhookURL,
-            Method = "POST",
-            Headers = {
-                ["Content-Type"] = "application/json"
-            },
-            Body = HttpService:JSONEncode(data)
-        })
-    end
-end)
 
 Mouse.KeyDown:Connect(function(key)
     key = key:lower()
@@ -97,13 +34,13 @@ Mouse.KeyUp:Connect(function(key)
     end
 end)
 
-UserInputService.InputBegan:Connect(function(input)
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if input.UserInputType == Enum.UserInputType.MouseButton2 then
         RightClickHeld = true
     end
 end)
 
-UserInputService.InputEnded:Connect(function(input)
+UserInputService.InputEnded:Connect(function(input, gameProcessed)
     if input.UserInputType == Enum.UserInputType.MouseButton2 then
         RightClickHeld = false
 
