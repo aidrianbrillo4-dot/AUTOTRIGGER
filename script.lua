@@ -75,26 +75,3 @@ RunService.RenderStepped:Connect(function()
         end
     end
 end)
-local RaycastParams = RaycastParams.new()
-RaycastParams.FilterType = Enum.RaycastFilterType.Blacklist
-
--- ignore your character + teammates
-local ignoreList = {LocalPlayer.Character}
-
-for _, player in pairs(Players:GetPlayers()) do
-    if player.Team == LocalPlayer.Team and player.Character then
-        table.insert(ignoreList, player.Character)
-    end
-end
-
-RaycastParams.FilterDescendantsInstances = ignoreList
-
-local ray = workspace:Raycast(
-    workspace.CurrentCamera.CFrame.Position,
-    workspace.CurrentCamera.CFrame.LookVector * 1000,
-    RaycastParams
-)
-
-if ray and ray.Instance and ray.Instance.Parent:FindFirstChild("Humanoid") then
-    -- enemy detected even behind teammate
-end
