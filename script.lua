@@ -1,12 +1,10 @@
 -- Settings
 local Hotkey = "t"
 local HotkeyToggle = true
-local HoldClick = true
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local Camera = workspace.CurrentCamera
 
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
@@ -15,49 +13,6 @@ local Enabled = false
 local RightClickHeld = false
 local CurrentlyPressed = false
 
--- 🔍 Check if target is enemy
-local function IsEnemy(character)
-    local player = Players:GetPlayerFromCharacter(character)
-
-    if player then
-        return player.Team ~= LocalPlayer.Team
-    end
-
-    return false
-end
-
--- 🎯 Raycast setup (ignores teammates)
-local function GetTarget()
-    local ignoreList = {LocalPlayer.Character}
-
-    for _, player in pairs(Players:GetPlayers()) do
-        if player.Team == LocalPlayer.Team and player.Character then
-            table.insert(ignoreList, player.Character)
-        end
-    end
-
-    local RaycastParams = RaycastParams.new()
-    RaycastParams.FilterType = Enum.RaycastFilterType.Blacklist
-    RaycastParams.FilterDescendantsInstances = ignoreList
-
-    local origin = Camera.CFrame.Position
-    local direction = Camera.CFrame.LookVector * 1000
-
-    local ray = workspace:Raycast(origin, direction, RaycastParams)
-
-    if ray and ray.Instance then
-        local character = ray.Instance:FindFirstAncestorOfClass("Model")
-        if character and character:FindFirstChild("Humanoid") then
-            if IsEnemy(character) then
-                return true
-            end
-        end
-    end
-
-    return false
-end
-
--- 🔘 Hotkey toggle
 Mouse.KeyDown:Connect(function(key)
     key = key:lower()
 
@@ -79,7 +34,6 @@ Mouse.KeyUp:Connect(function(key)
     end
 end)
 
--- 🖱 Right click detect (scope)
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if input.UserInputType == Enum.UserInputType.MouseButton2 then
         RightClickHeld = true
@@ -97,10 +51,9 @@ UserInputService.InputEnded:Connect(function(input, gameProcessed)
     end
 end)
 
--- 🔄 Main loop
 RunService.RenderStepped:Connect(function()
     if Enabled and RightClickHeld then
-        if GetTarget() then
+        if Mouse.Target and Mouse.Target.Parent:FindFirstChild("Humanoid") and IsEnemy(Mouse.Target) then
             if HoldClick then
                 if not CurrentlyPressed then
                     CurrentlyPressed = true
@@ -122,3 +75,26 @@ RunService.RenderStepped:Connect(function()
         end
     end
 end)
+local RaycastParams = RaycastParams.new()
+RaycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+
+-- ignore your character + teammates
+local ignoreList = {LocalPlayer.Character}
+
+for _, player in pairs(Players:GetPlayers()) do
+    if player.Team == LocalPlayer.Team and player.Character then
+        table.insert(ignoreList, player.Character)
+    end
+end
+
+RaycastParams.FilterDescendantsInstances = ignoreList
+
+local ray = workspace:Raycast(
+    workspace.CurrentCamera.CFrame.Position,
+    workspace.CurrentCamera.CFrame.LookVector * 1000,
+    RaycastParams
+)
+
+if ray and ray.Instance and ray.Instance.Parent:FindFirstChild("Humanoid") then
+    -- enemy detected even behind teammate
+end
