@@ -1,10 +1,13 @@
 -- Settings
 local HoldClick = true
-local Hotkey = "t"
+local Hotkey = "x"
 local HotkeyToggle = true
 
--- SCOPE DELAY SETTINGS
-local ScopeDelay = 0.15-- Delay in seconds after scoping (0 = instant)
+-- BASE DELAY SETTINGS
+local MinDelay = 0.05   -- fastest possible delay
+local MaxDelay = 0.20   -- slowest delay
+local Sensitivity = 0.002 -- how much flick speed affects delay
+
 local ScopedIn = false
 local ScopeDelayTime = 0
 
@@ -18,6 +21,10 @@ local Mouse = LocalPlayer:GetMouse()
 local Enabled = false
 local RightClickHeld = false
 local CurrentlyPressed = false
+
+-- Flick tracking
+local LastMousePos = Vector2.new(0, 0)
+local FlickSpeed = 0
 
 Mouse.KeyDown:Connect(function(key)
 	key = key:lower()
@@ -44,7 +51,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
 	if input.UserInputType == Enum.UserInputType.MouseButton2 then
 		RightClickHeld = true
 		ScopedIn = true
-		ScopeDelayTime = tick() -- Start delay timer when scoping
+		ScopeDelayTime = tick()
 	end
 end)
 
@@ -60,10 +67,22 @@ UserInputService.InputEnded:Connect(function(input, gameProcessed)
 	end
 end)
 
-RunService.RenderStepped:Connect(function()
+RunService.RenderStepped:Connect(function(dt)
+	-- Calculate flick speed
+	local currentPos = UserInputService:GetMouseLocation()
+	local delta = (currentPos - LastMousePos).Magnitude
+	FlickSpeed = delta / (dt > 0 and dt or 1)
+	LastMousePos = currentPos
+
+	-- Convert flick speed into delay
+	local DynamicDelay = math.clamp(
+		MaxDelay - (FlickSpeed * Sensitivity),
+		MinDelay,
+		MaxDelay
+	)
+
 	if Enabled and RightClickHeld and ScopedIn then
-		-- Check if scope delay has passed
-		local DelayPassed = (tick() - ScopeDelayTime) >= ScopeDelay
+		local DelayPassed = (tick() - ScopeDelayTime) >= DynamicDelay
 		
 		if Mouse.Target and Mouse.Target.Parent:FindFirstChild("Humanoid") and DelayPassed then
 			if HoldClick then
